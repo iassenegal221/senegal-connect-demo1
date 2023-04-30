@@ -4,7 +4,7 @@ import openai
 app = Flask(__name__)
 
 # Define your OpenAI API key
-openai.api_key = "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"
+openai.api_key = ""
 
 
 # Serve the HTML page
