@@ -8,11 +8,11 @@
         body {
             font-family: Arial, sans-serif;
         }
-
+        
         .hidden {
             display: none;
         }
-
+        
         #chatbox {
             width: 90%;
             height: 600px;
@@ -22,12 +22,12 @@
             padding: 10px;
             box-sizing: border-box;
         }
-
+        
         #chatbox p {
             margin: 5px 0;
             line-height: 1.2;
         }
-
+        
         #userInput {
             width: 90%;
             padding: 10px;
@@ -35,7 +35,7 @@
             box-sizing: border-box;
             bottom: 10%;
         }
-
+        
         #sendButton {
             width: 90%;
             padding: 10px;
@@ -45,7 +45,7 @@
             cursor: pointer;
             box-sizing: border-box;
         }
-
+        
         #footer {
             position: absolute;
             bottom: 0px;
@@ -53,22 +53,20 @@
             text-align: center;
             color: grey;
         }
-
+        
         #footer a {
             color: inherit;
         }
-
+        
         @media only screen and (max-width: 600px) {
             #chatbox {
                 height: 400px;
             }
-
             #userInput {
                 width: 100%;
                 bottom: 20%;
                 position: fixed;
             }
-
             #sendButton {
                 width: 100%;
                 bottom: 15%;
@@ -76,6 +74,8 @@
             }
         }
     </style>
+    <script src="https://cdn.staticfile.org/jquery/3.6.3/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/markdown-it/13.0.1/markdown-it.min.js"></script>
 </head>
 
 <body>
@@ -86,40 +86,39 @@
     <br/>
     <input id="sendButton" type="button" value="Send">
 
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
-        const chatbox = document.querySelector('#chatbox');
-        const userInput = document.querySelector('#userInput');
-        const sendButton = document.querySelector('#sendButton');
+        const url = new URL(window.location.href);
+        const key = url.searchParams.get('key');
+        if (key) {
+            $("#apiKey").val(key);
+            $("#apiKey").hide();
+        }
+        const chatbox = $("#chatbox");
+        const userInput = $("#userInput");
+        const sendButton = $("#sendButton");
 
-        sendButton.addEventListener('click', () => {
-            const message = userInput.value.trim();
-            if (message) {
-                chatbox.innerHTML += `<pre>Q: ${message}</pre>`;
-                userInput.value = '';
-                sendButton.disabled = true;
-                sendButton.value = 'Sending...';
+        $(document).ready(function() {
+            const messages = [];
 
-                // Send the message to the server
-                axios.post('/chat', {
-                        message: message
-                    })
-                    .then(response => {
-                        chatbox.innerHTML += `<pre>A: ${response.data.message}</pre>`;
-                        sendButton.disabled = false;
-                        sendButton.value = 'Send';
-                    })
-                    .catch(error => {
-                        console.error(error);
-                        sendButton.value = 'Oops, something went wrong';
+            sendButton.on("click", () => {
+                const message = userInput.val();
+                if (message) {
+                    messages.push({
+                        "role": "user",
+                        "content": message
                     });
-            }
-        });
+                    chatbox.append(`<pre>Q: ${message}</pre>`);
+                    userInput.val("");
+                    sendButton.val("Sending...");
+                    sendButton.prop("disabled", true);
+                    fetchMessages();
+                }
+            });
 
-        userInput.addEventListener('keydown', event => {
-            if (event.keyCode === 13 && !event.ctrlKey && !event.shiftKey) { // Enter key without Ctrl key
-                event.preventDefault();
-                sendButton.click();
+            userInput.on("keydown", (event) => {
+                if (event.keyCode === 13 && !event.ctrlKey && !event.shiftKey) { // Enter key without Ctrl key
+                    event.preventDefault();
+                    sendButton.click();
                 } else if (event.keyCode === 13 && (event.ctrlKey || event.shiftKey)) { // Enter key with Ctrl key
                     event.preventDefault();
                     const cursorPosition = userInput.prop("selectionStart");
